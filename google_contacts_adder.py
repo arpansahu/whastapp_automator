@@ -1,58 +1,31 @@
-from __future__ import print_function
+import os
 
-import os.path
+import pandas as pd
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+final_name_array = []
+final_mob_no_array = []
+member_count = 1
+for file in os.listdir('/Users/arpansahu/projects/whastapp_automator/Contacts Sheet'):
+    print(file)
 
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/contacts.readonly']
+    excel_data = pd.read_excel('/Users/arpansahu/projects/whastapp_automator/Contacts Sheet/' + file)
 
+    saved_name_arr = excel_data['Saved Name']
+    mob_no_arr = excel_data['WhatsApp Number(with country code)']
+    for count in range(1, len(saved_name_arr) + 1):
+        try:
+            contact_name = saved_name_arr[count]
+            mob_no = mob_no_arr[count]
 
-def main():
-    """Shows basic usage of the People API.
-    Prints the name of the first 10 connections.
-    """
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+            if '+' in contact_name:
+                final_name_array.append(f'MCH MEMBER {member_count}')
+                final_mob_no_array.append(mob_no)
+                member_count += 1
+        except Exception as e:
+            print(e)
 
-    try:
-        service = build('people', 'v1', credentials=creds)
+dict = {'First Name': final_name_array, 'Mobile Phone': final_mob_no_array}
 
-        # Call the People API
-        print('List 10 connection names')
-        results = service.people().connections().list(
-            resourceName='people/me',
-            pageSize=10,
-            personFields='names,emailAddresses').execute()
-        connections = results.get('connections', [])
+df = pd.DataFrame(dict)
 
-        for person in connections:
-            names = person.get('names', [])
-            if names:
-                name = names[0].get('displayName')
-                print(name)
-    except HttpError as err:
-        print(err)
-
-
-if __name__ == '__main__':
-    main()
+df.to_csv('file1.csv')

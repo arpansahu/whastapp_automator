@@ -28,8 +28,8 @@ if __name__ == "__main__":
     # Load the xlsx file
 
     for file in ['HOPELESS.xlsx', 'NAMELESS.xlsx', 'SHAMELESS.xlsx']:
-        excel_data = pd.read_excel('MCH V4 Level 2 Agent.xlsx')
-        breakpoint()
+        excel_data = pd.read_excel(file)
+
         for mob_no in excel_data['WhatsApp Number(with country code)']:
             print(mob_no)
 
